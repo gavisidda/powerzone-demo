@@ -278,7 +278,8 @@ a{color:inherit;text-decoration:none}
       </div>
       <div id="role-form-area"></div>
     </div>
-    <div class="demo-banner">⚡ Demo mode · Admin PIN: <b>123456</b> · Customer: <b>9000000001</b> PIN: <b>1234</b></div>
+    <div class="demo-banner" id="demo-banner" style="display:none">⚡ Demo mode · Admin PIN: <b>123456</b> · Customer: <b>9000000001</b> PIN: <b>1234</b></div>
+    <script>if(IS_PLACEHOLDER)document.getElementById('demo-banner').style.display='block';<\/script>
   </div>
 </div>
 
@@ -608,11 +609,23 @@ a{color:inherit;text-decoration:none}
 </div></div>
 <script>
 'use strict';
-const FIREBASE_CONFIG={apiKey:"AIzaSyBklYsw--WamSXHfnoLIh3A0wu2koWq2s0",authDomain:"powerzone-demo.firebaseapp.com",projectId:"powerzone-demo",storageBucket:"powerzone-demo.firebasestorage.app",messagingSenderId:"457332746359",appId:"1:457332746359:web:4a3201c29109d276427e72"};
-const FORCE_DEMO=FIREBASE_CONFIG.apiKey.includes('REPLACE');
+// ════════════════════════════════════════════════════════
+// 🔴 PASTE YOUR FIREBASE CONFIG HERE TO GO LIVE
+// Firebase Console → Project Settings → Your Apps → Config
+// ════════════════════════════════════════════════════════
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyBklYsw--WamSXHfnoLIh3A0wu2koWq2s0",
+  authDomain:"powerzone-demo.firebaseapp.com",
+  projectId:"powerzone-demo",
+  storageBucket:"powerzone-demo.firebasestorage.app",
+  messagingSenderId:"457332746359",
+  appId:"1:457332746359:web:4a3201c29109d276427e72",
+  measurementId:"G-5PF138K2G7"
+};
+const IS_PLACEHOLDER=false; // Live Firebase config active
 const ADMIN_PIN_DEFAULT='123456';
 const APP_URL=window.location.href;
-const S={demo:FORCE_DEMO,role:null,user:null,screen:'home',
+const S={demo:IS_PLACEHOLDER,role:null,user:null,screen:'home',
   data:{products:[],quoteReqs:[],svcReqs:[],batteryBuys:[],invoices:[],members:[],settings:{},customers:[]},
   filters:{products:'All',inventory:'All',reqTab:'quote',billTab:'invoices'},
   pinBuffer:'',pinTarget:null,pendingMobile:'',editingProductId:null,viewingQuoteId:null,viewingSvcId:null,saving:false};
@@ -668,27 +681,112 @@ function loadDemoData(){
 // FIREBASE
 async function fbAdd(col,obj){
   if(S.demo){obj.id=col[0]+Date.now();S.data[col].unshift(obj);return obj;}
-  try{const ref=await db.collection(col).add(obj);obj.id=ref.id;return obj;}catch(e){toast('⚠ '+e.message);return null;}
+  try{
+    const ref=await db.collection(col).add(obj);
+    obj.id=ref.id;
+    // Always update local cache after live save so UI refreshes immediately
+    if(!S.data[col])S.data[col]=[];
+    S.data[col].unshift(obj);
+    return obj;
+  }catch(e){toast('⚠ Save failed: '+e.message);return null;}
 }
 async function fbUpdate(col,id,obj){
   if(S.demo){const i=S.data[col].findIndex(x=>x.id===id);if(i>=0)Object.assign(S.data[col][i],obj);return;}
-  try{await db.collection(col).doc(id).update(obj);}catch{}
+  // Also update local state immediately for instant UI refresh
+  const i=S.data[col]?S.data[col].findIndex(x=>x.id===id):-1;
+  if(i>=0)Object.assign(S.data[col][i],obj);
+  try{await db.collection(col).doc(id).update(obj);}
+  catch(e){
+    // If doc doesn't exist yet (new collection), use set with merge
+    try{await db.collection(col).doc(id).set(obj,{merge:true});}catch(e2){console.warn('fbUpdate failed:',e2);}
+  }
 }
 async function fbDelete(col,id){
   if(S.demo){S.data[col]=S.data[col].filter(x=>x.id!==id);return;}
   try{await db.collection(col).doc(id).delete();}catch{}
 }
 function initFirebase(){
-  if(S.demo){bootApp();return;}
-  try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();auth=firebase.auth();bootApp();}
-  catch(e){S.demo=true;bootApp();}
+  if(IS_PLACEHOLDER){S.demo=true;bootApp();return;}
+  // Safety timeout: if Firebase doesn't respond in 10s, boot anyway
+  const safetyTimer=setTimeout(()=>{
+    console.warn('Firebase timeout — booting without data');
+    bootApp();
+  },10000);
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db=firebase.firestore();
+    auth=firebase.auth();
+    loadAllData().then(()=>{clearTimeout(safetyTimer);bootApp();})
+      .catch(e=>{clearTimeout(safetyTimer);console.warn('loadAllData error:',e);bootApp();});
+  }catch(e){clearTimeout(safetyTimer);console.warn('Firebase init error:',e);bootApp();}
+}
+
+// Safe fetch: returns [] or {} on any error — never blocks boot
+async function safeGet(promise, fallback=[]){
+  try{const r=await promise;return r;}
+  catch(e){console.warn('Firestore fetch error:',e.message);return null;}
+}
+
+async function loadAllData(){
+  // Fetch each collection independently — one failure won't block others
+  const [sets,mems,prods,qReqs,sReqs,bBuys,invs,custs]=await Promise.all([
+    safeGet(db.collection('settings').doc('business').get()),
+    safeGet(db.collection('members').get()),
+    safeGet(db.collection('products').get()),
+    safeGet(db.collection('quoteReqs').orderBy('date','desc').limit(200).get()),
+    safeGet(db.collection('svcReqs').orderBy('date','desc').limit(200).get()),
+    safeGet(db.collection('batteryBuys').orderBy('date','desc').limit(200).get()),
+    safeGet(db.collection('invoices').orderBy('date','desc').limit(200).get()),
+    safeGet(db.collection('customers').get()),
+  ]);
+  if(sets&&sets.exists) S.data.settings=sets.data();
+  else S.data.settings={name:'PowerZone',adminPin:ADMIN_PIN_DEFAULT};
+  S.data.members=mems?mems.docs.map(d=>({id:d.id,...d.data()})):[];
+  S.data.products=prods?prods.docs.map(d=>({id:d.id,...d.data()})):[];
+  S.data.quoteReqs=qReqs?qReqs.docs.map(d=>({id:d.id,...d.data()})):[];
+  S.data.svcReqs=sReqs?sReqs.docs.map(d=>({id:d.id,...d.data()})):[];
+  S.data.batteryBuys=bBuys?bBuys.docs.map(d=>({id:d.id,...d.data()})):[];
+  S.data.invoices=invs?invs.docs.map(d=>({id:d.id,...d.data()})):[];
+  S.data.customers=custs?custs.docs.map(d=>({id:d.id,...d.data()})):[];
 }
 function bootApp(){
   if(S.demo)loadDemoData();
+  // If live and settings empty, create default settings doc
+  if(!S.demo&&db&&(!S.data.settings||!S.data.settings.name)){
+    S.data.settings={name:'PowerZone UPS & Battery',owner:'',phone:'',wa:'',addr:'',gstNum:'',adminPin:ADMIN_PIN_DEFAULT};
+    db.collection('settings').doc('business').set(S.data.settings,{merge:true}).catch(()=>{});
+  }
   const saved=lsGet('pz_session');
   if(saved){S.role=saved.role;S.user=saved.user;showMainApp();}
   else showAuthRole();
   hideSplash();
+  // Start real-time listeners so new customer requests appear instantly
+  if(!S.demo&&db) startRealtimeListeners();
+}
+const _unsubs=[];
+function startRealtimeListeners(){
+  // Listen for new quote requests
+  _unsubs.push(db.collection('quoteReqs').orderBy('date','desc').limit(200)
+    .onSnapshot(snap=>{
+      S.data.quoteReqs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      if(S.screen==='home')renderHome();
+      if(S.screen==='requests')renderRequests();
+      renderTopRight();
+    },e=>console.warn('quoteReqs listener:',e)));
+  // Listen for new service requests
+  _unsubs.push(db.collection('svcReqs').orderBy('date','desc').limit(200)
+    .onSnapshot(snap=>{
+      S.data.svcReqs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      if(S.screen==='home')renderHome();
+      if(S.screen==='requests')renderRequests();
+      renderTopRight();
+    },e=>console.warn('svcReqs listener:',e)));
+  // Listen for new battery requests
+  _unsubs.push(db.collection('batteryBuys').orderBy('date','desc').limit(200)
+    .onSnapshot(snap=>{
+      S.data.batteryBuys=snap.docs.map(d=>({id:d.id,...d.data()}));
+      if(S.screen==='requests')renderRequests();
+    },e=>console.warn('batteryBuys listener:',e)));
 }
 function hideSplash(){setTimeout(()=>{const sp=document.getElementById('splash');if(!sp)return;sp.style.transition='opacity .4s';sp.style.opacity='0';setTimeout(()=>sp.remove(),400);},900);}
 
@@ -703,13 +801,23 @@ function renderRoleForm(role){
       <div class="pin-display" id="pin-display-admin"></div><div class="pin-pad" id="pin-pad-admin"></div>`;
     S.pinTarget='admin';S.pinBuffer='';renderPinPad('admin');renderPinDots('admin');
   }else if(role==='member'){
-    area.innerHTML=`<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Select name & enter PIN</p>
-      <select class="f-input f-select" id="member-select" style="margin-bottom:9px">
-        ${S.data.members.filter(m=>m.active).map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}
-      </select>
-      <div class="pin-display" id="pin-display-member"></div><div class="pin-pad" id="pin-pad-member"></div>
-      <div style="margin-top:9px;text-align:center;font-size:10px;color:var(--muted)">Raju:<b style="color:var(--accent)">111222</b> Seema:<b style="color:var(--accent)">222333</b></div>`;
-    S.pinTarget='member';S.pinBuffer='';renderPinPad('member');renderPinDots('member');
+    // In live mode, refresh members list from Firestore so newly added members appear
+    const renderMemberForm=()=>{
+      const mems=S.data.members.filter(m=>m.active);
+      area.innerHTML=`<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Select name & enter PIN</p>
+        ${mems.length===0?'<p style="font-size:12px;color:var(--danger);text-align:center;margin-bottom:9px">No members found. Ask admin to add you.</p>':''}
+        <select class="f-input f-select" id="member-select" style="margin-bottom:9px">
+          ${mems.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}
+        </select>
+        <div class="pin-display" id="pin-display-member"></div><div class="pin-pad" id="pin-pad-member"></div>`;
+      S.pinTarget='member';S.pinBuffer='';renderPinPad('member');renderPinDots('member');
+    };
+    if(!S.demo&&db){
+      area.innerHTML=`<p style="font-size:12px;color:var(--muted);text-align:center;padding:16px">Loading members...</p>`;
+      db.collection('members').where('active','==',true).get()
+        .then(snap=>{S.data.members=snap.docs.map(d=>({id:d.id,...d.data()}));renderMemberForm();})
+        .catch(()=>renderMemberForm());
+    } else { renderMemberForm(); }
   }else{
     area.innerHTML=`<p style="font-size:11px;color:var(--muted);margin-bottom:9px">Enter your mobile number</p>
       <div class="mobile-field"><span class="cc">+91</span><input type="tel" inputmode="numeric" maxlength="10" id="cust-mobile-input" placeholder="9XXXXXXXXX"/></div>
@@ -750,9 +858,22 @@ function doVerifyPin(suffix){
     if(S.pinBuffer===custNewPin)registerNewCustomer();
     else{S.pinBuffer='';renderPinDots(suffix);toast('❌ PINs do not match');}
   }else if(S.pinTarget==='cust-login'){
-    const cust=S.data.customers.find(c=>c.mobile===S.pendingMobile);
-    if(cust&&S.pinBuffer===cust.pin)loginAs('customer',{name:cust.name,mobile:cust.mobile,role:'customer'});
-    else wrongPin(suffix);
+    if(!S.demo&&db){
+      db.collection('customers').doc(S.pendingMobile).get().then(doc=>{
+        if(doc.exists){
+          const cust=doc.data();
+          // also update local cache
+          const idx=S.data.customers.findIndex(c=>c.mobile===S.pendingMobile);
+          if(idx>=0)S.data.customers[idx]=cust; else S.data.customers.push(cust);
+          if(S.pinBuffer===cust.pin)loginAs('customer',{name:cust.name,mobile:cust.mobile,role:'customer'});
+          else wrongPin(suffix);
+        }else wrongPin(suffix);
+      }).catch(()=>wrongPin(suffix));
+    }else{
+      const cust=S.data.customers.find(c=>c.mobile===S.pendingMobile);
+      if(cust&&S.pinBuffer===cust.pin)loginAs('customer',{name:cust.name,mobile:cust.mobile,role:'customer'});
+      else wrongPin(suffix);
+    }
   }
 }
 function wrongPin(suffix){S.pinBuffer='';renderPinDots(suffix);const el=document.getElementById('pin-display-'+suffix);if(el){el.style.animation='shake .3s ease';setTimeout(()=>el.style.animation='',350);}toast('❌ Incorrect PIN');}
@@ -760,7 +881,21 @@ function custMobileContinue(){
   const mob=document.getElementById('cust-mobile-input')?.value.replace(/\D/g,'');
   if(!mob||mob.length!==10){toast('Enter valid 10-digit mobile');return;}
   S.pendingMobile=mob;
-  S.data.customers.find(c=>c.mobile===mob)?renderCustPinLogin():renderCustNewReg();
+  if(!S.demo&&db){
+    // Always check Firestore for live customer lookup
+    db.collection('customers').doc(mob).get().then(doc=>{
+      if(doc.exists){
+        const cust=doc.data();
+        const idx=S.data.customers.findIndex(c=>c.mobile===mob);
+        if(idx>=0)S.data.customers[idx]=cust; else S.data.customers.push(cust);
+        renderCustPinLogin();
+      }else renderCustNewReg();
+    }).catch(()=>{
+      S.data.customers.find(c=>c.mobile===mob)?renderCustPinLogin():renderCustNewReg();
+    });
+  }else{
+    S.data.customers.find(c=>c.mobile===mob)?renderCustPinLogin():renderCustNewReg();
+  }
 }
 function renderCustPinLogin(){
   const cust=S.data.customers.find(c=>c.mobile===S.pendingMobile);
@@ -800,8 +935,8 @@ function custConfirmPin(){
 }
 async function registerNewCustomer(){
   const cust={mobile:S.pendingMobile,name:custNewName,pin:custNewPin,registeredOn:today()};
-  if(S.demo)S.data.customers.push(cust);
-  else try{await db.collection('customers').doc(S.pendingMobile).set(cust);}catch{}
+  if(S.demo){S.data.customers.push(cust);}
+  else{try{await db.collection('customers').doc(S.pendingMobile).set(cust);S.data.customers.push(cust);}catch(e){toast('Register error: '+e.message);}}
   loginAs('customer',{name:custNewName,mobile:S.pendingMobile,role:'customer'});
   toast('✅ Account created! Welcome '+custNewName);
 }
@@ -1160,7 +1295,7 @@ function renderMore(){
     </div>
     <div id="sub-panel" style="margin-top:4px"></div><div style="height:8px"></div>`;
 }
-function showSubPanel(type){
+async function showSubPanel(type){
   const el=document.getElementById('sub-panel');if(!el)return;
   if(type==='team'){
     el.innerHTML=`
@@ -1172,12 +1307,25 @@ function showSubPanel(type){
           <button class="btn-sm-ghost" style="font-size:10px" onclick="toggleMember('${m.id}')">${m.active?'Disable':'Enable'}</button>
         </div>`).join('')}`;
   }else{
+    // Reload customers fresh from Firestore
+    if(!S.demo&&db){
+      try{const snap=await db.collection('customers').get();S.data.customers=snap.docs.map(d=>({id:d.id,...d.data()}));}
+      catch(e){}
+    }
     el.innerHTML=`
-      <div class="sec-head"><div class="sec-title">Customers</div></div>
+      <div class="sec-head"><div class="sec-title">Customers (${S.data.customers.length})</div></div>
       ${S.data.customers.length?S.data.customers.map(c=>`
-        <div class="lcard">
-          <div class="avatar" style="width:36px;height:36px;font-size:14px;flex-shrink:0;background:linear-gradient(135deg,#00c9a7,#009f80)">${c.name[0]}</div>
-          <div class="lcard-info"><h4>${c.name}<span class="role-tag rt-customer">Customer</span></h4><p>+91 ${c.mobile} · ${c.registeredOn||'—'}</p></div>
+        <div class="rcard" style="margin-bottom:8px">
+          <div class="rcard-head">
+            <div>
+              <div class="rcard-name">${c.name}<span class="role-tag rt-customer">Customer</span></div>
+              <div class="rcard-sub">+91 ${c.mobile} · Reg: ${c.registeredOn||'—'}</div>
+            </div>
+          </div>
+          <div class="rcard-actions">
+            <button class="ra-btn ra-wa" onclick="waContact('${c.mobile}','${c.name}')">💬 WA</button>
+            <button class="ra-btn ra-view" onclick="resetCustPin('${c.mobile}','${c.name}')">🔑 Reset PIN</button>
+          </div>
         </div>`).join(''):`<div class="empty"><div class="ei">👥</div><p>No customers yet</p></div>`}`;
   }
   el.scrollIntoView({behavior:'smooth'});
@@ -1187,28 +1335,62 @@ async function toggleMember(id){
   if(!S.demo)await fbUpdate('members',id,{active:m.active});
   showSubPanel('team');toast(m.active?'✅ Enabled':'Member disabled');
 }
-function openResetPin(){
+async function openResetPin(){
+  // Always fetch latest customers & members from Firestore before showing
+  if(!S.demo&&db){
+    try{
+      const [mems,custs]=await Promise.all([
+        db.collection('members').get(),
+        db.collection('customers').get()
+      ]);
+      S.data.members=mems.docs.map(d=>({id:d.id,...d.data()}));
+      S.data.customers=custs.docs.map(d=>({id:d.id,...d.data()}));
+    }catch(e){console.warn('openResetPin fetch:',e);}
+  }
   const sel=document.getElementById('rp-user');
   const all=[
-    {type:'admin',id:'admin-pin',label:(S.data.settings.owner||'Admin')+' — Admin PIN (6-digit)'},
-    ...S.data.members.map(m=>({type:'member',id:m.id,label:m.name+' — Member PIN (6-digit)'})),
-    ...S.data.customers.map(c=>({type:'customer',id:c.mobile,label:c.name+' +91'+c.mobile+' — Customer PIN (4-digit)'})),
+    {type:'admin',id:'admin-pin',label:'⚡ '+(S.data.settings.owner||'Admin')+' — Admin PIN (6-digit)'},
+    ...S.data.members.map(m=>({type:'member',id:m.id,label:'👤 '+m.name+' — Member PIN (6-digit)'})),
+    ...S.data.customers.map(c=>({type:'customer',id:c.mobile,label:'🛒 '+c.name+' +91'+c.mobile+' — Customer PIN (4-digit)'})),
   ];
   sel.innerHTML=all.map(u=>`<option value="${u.type}|${u.id}">${u.label}</option>`).join('');
-  sv('rp-pin','');sv('rp-confirm','');openModal('reset-pin');
+  sv('rp-pin','');sv('rp-confirm','');
+  openModal('reset-pin');
+}
+function resetCustPin(mobile, name){
+  // Quick reset: pre-select this customer in reset-pin modal
+  openResetPin().then(()=>{
+    const sel=document.getElementById('rp-user');
+    if(sel){
+      for(let o of sel.options){
+        if(o.value===`customer|${mobile}`){o.selected=true;break;}
+      }
+    }
+  });
 }
 async function doResetPin(){
   const selVal=document.getElementById('rp-user')?.value;if(!selVal)return;
   const[type,id]=selVal.split('|');
   const pin=v('rp-pin');const conf=v('rp-confirm');
   if(!pin){toast('Enter new PIN');return;}
-  if(pin!==conf){toast('PINs do not match');return;}
+  if(pin!==conf){toast('❌ PINs do not match');return;}
   if((type==='admin'||type==='member')&&pin.length!==6){toast('Admin/Member PIN must be 6 digits');return;}
   if(type==='customer'&&pin.length!==4){toast('Customer PIN must be 4 digits');return;}
-  if(type==='admin'){S.data.settings.adminPin=pin;if(!S.demo)try{await db.collection('settings').doc('business').update({adminPin:pin});}catch{}}
-  else if(type==='member'){const m=S.data.members.find(x=>x.id===id);if(m)m.pin=pin;if(!S.demo)await fbUpdate('members',id,{pin});}
-  else{const c=S.data.customers.find(x=>x.mobile===id);if(c)c.pin=pin;if(!S.demo)try{await db.collection('customers').doc(id).update({pin});}catch{}}
-  closeModal('reset-pin');toast('✅ PIN reset successfully');
+  try{
+    if(type==='admin'){
+      S.data.settings.adminPin=pin;
+      if(!S.demo)await db.collection('settings').doc('business').set({adminPin:pin},{merge:true});
+    }else if(type==='member'){
+      const m=S.data.members.find(x=>x.id===id);if(m)m.pin=pin;
+      if(!S.demo)await db.collection('members').doc(id).update({pin});
+    }else{
+      // Customer — use mobile as document ID
+      const c=S.data.customers.find(x=>x.mobile===id);if(c)c.pin=pin;
+      if(!S.demo)await db.collection('customers').doc(id).set({pin},{merge:true});
+    }
+    closeModal('reset-pin');
+    toast('✅ PIN reset for '+id);
+  }catch(e){toast('❌ Reset failed: '+e.message);}
 }
 
 // CUSTOMER SCREENS
@@ -1313,7 +1495,6 @@ async function saveProduct(){
   }else{
     obj.qty=baseQty+addQty;
     await fbAdd('products',obj);
-    if(!S.demo)S.data.products.unshift(obj);
     closeModal('product');renderProducts();renderHome();toast('✅ Product added!');
   }
   S.saving=false;
@@ -1329,7 +1510,7 @@ async function saveQuoteReq(){
     type:selVal('qm-type'),product:selVal('qm-product'),budget:+v('qm-budget'),backup:+v('qm-backup'),
     notes:v('qm-notes'),status:'pending',date:today(),custMobile:'',quotedPrice:'',quoteNotes:''};
   if(!obj.name||!obj.mobile){toast('Enter name and mobile');S.saving=false;return;}
-  await fbAdd('quoteReqs',obj);if(!S.demo)S.data.quoteReqs.unshift(obj);
+  await fbAdd('quoteReqs',obj);
   closeModal('quote');renderRequests();renderHome();toast('✅ Quote request added!');S.saving=false;
 }
 async function saveSvcReq(){
@@ -1338,7 +1519,7 @@ async function saveSvcReq(){
     landmark:v('sv-landmark'),issue:selVal('sv-issue'),desc:v('sv-desc'),
     status:'pending',date:today(),custMobile:'',assignedTo:'',workNotes:''};
   if(!obj.name){toast('Enter customer name');S.saving=false;return;}
-  await fbAdd('svcReqs',obj);if(!S.demo)S.data.svcReqs.unshift(obj);
+  await fbAdd('svcReqs',obj);
   closeModal('service');renderRequests();renderHome();toast('✅ Service request saved!');S.saving=false;
 }
 async function saveBatteryBuy(){
@@ -1347,7 +1528,7 @@ async function saveBatteryBuy(){
     type:selVal('bb-type'),capacity:+v('bb-cap'),age:+v('bb-age'),
     condition:selVal('bb-cond'),expectedPrice:+v('bb-price'),status:'pending',date:today(),custMobile:''};
   if(!obj.name){toast('Enter customer name');S.saving=false;return;}
-  await fbAdd('batteryBuys',obj);if(!S.demo)S.data.batteryBuys.unshift(obj);
+  await fbAdd('batteryBuys',obj);
   closeModal('battery');renderRequests();toast('✅ Battery buy request saved!');S.saving=false;
 }
 async function saveInvoice(){
@@ -1357,14 +1538,14 @@ async function saveInvoice(){
     subtotal:sub,gst,total:+(sub*(1+gst/100)).toFixed(2),
     type:selVal('iv-type'),date:today(),custMobile:v('iv-cust-mobile')};
   if(!obj.customer){toast('Enter customer name');S.saving=false;return;}
-  await fbAdd('invoices',obj);if(!S.demo)S.data.invoices.unshift(obj);
+  await fbAdd('invoices',obj);
   closeModal('invoice');renderBilling();toast('✅ Invoice saved!');S.saving=false;
 }
 async function saveMember(){
   if(S.saving)return;S.saving=true;
   const obj={name:v('mm-name'),mobile:v('mm-mobile'),role:selVal('mm-role'),pin:v('mm-pin'),active:true,date:today()};
   if(!obj.name||!obj.pin||obj.pin.length!==6){toast('Enter name and 6-digit PIN');S.saving=false;return;}
-  await fbAdd('members',obj);if(!S.demo)S.data.members.push(obj);
+  await fbAdd('members',obj);
   closeModal('member');showSubPanel('team');toast('✅ Member added!');S.saving=false;
 }
 async function saveSettings(){
@@ -1372,7 +1553,7 @@ async function saveSettings(){
   const obj={name:v('bs-name'),owner:v('bs-owner'),phone:v('bs-phone'),wa:v('bs-wa'),
     addr:v('bs-addr'),gstNum:v('bs-gst'),adminPin:pin||S.data.settings.adminPin||ADMIN_PIN_DEFAULT};
   S.data.settings=obj;
-  if(!S.demo)try{await db.collection('settings').doc('business').set(obj);}catch{}
+  if(!S.demo)try{await db.collection('settings').doc('business').set(obj,{merge:true});}catch(e){toast('Settings save error: '+e.message);}
   closeModal('settings');toast('✅ Settings saved!');
 }
 async function custSubmitService(){
@@ -1381,7 +1562,7 @@ async function custSubmitService(){
     location:v('cs-addr'),landmark:v('cs-landmark'),issue:selVal('cs-issue'),desc:v('cs-desc'),
     status:'pending',date:today(),custMobile:S.user?.mobile||'',assignedTo:'',workNotes:''};
   if(!obj.name||!obj.location){toast('Enter name and address');S.saving=false;return;}
-  await fbAdd('svcReqs',obj);if(!S.demo)S.data.svcReqs.unshift(obj);
+  await fbAdd('svcReqs',obj);
   closeModal('cust-service');renderCustRequest();toast('✅ Service request submitted!');S.saving=false;
 }
 async function custSubmitQuote(){
@@ -1391,7 +1572,7 @@ async function custSubmitQuote(){
     budget:+v('cq-budget'),backup:+v('cq-backup'),notes:v('cq-notes'),
     status:'pending',date:today(),custMobile:S.user?.mobile||'',quotedPrice:'',quoteNotes:''};
   if(!obj.name){toast('Enter your name');S.saving=false;return;}
-  await fbAdd('quoteReqs',obj);if(!S.demo)S.data.quoteReqs.unshift(obj);
+  await fbAdd('quoteReqs',obj);
   closeModal('cust-quote');renderCustRequest();toast('✅ Quote request submitted!');S.saving=false;
 }
 async function custSubmitBattery(){
@@ -1401,7 +1582,7 @@ async function custSubmitBattery(){
     condition:selVal('cb-cond'),expectedPrice:+v('cb-price'),
     status:'pending',date:today(),custMobile:S.user?.mobile||''};
   if(!obj.name){toast('Enter your name');S.saving=false;return;}
-  await fbAdd('batteryBuys',obj);if(!S.demo)S.data.batteryBuys.unshift(obj);
+  await fbAdd('batteryBuys',obj);
   closeModal('cust-battery');renderCustRequest();toast('✅ Battery sell request submitted!');S.saving=false;
 }
 async function updateStatus(col,id,status){
