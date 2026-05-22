@@ -279,7 +279,7 @@ a{color:inherit;text-decoration:none}
       <div id="role-form-area"></div>
     </div>
     <div class="demo-banner" id="demo-banner" style="display:none">⚡ Demo mode · Admin PIN: <b>123456</b> · Customer: <b>9000000001</b> PIN: <b>1234</b></div>
-    <script>if(IS_PLACEHOLDER)document.getElementById('demo-banner').style.display='block';<\/script>
+    
   </div>
 </div>
 
@@ -706,25 +706,44 @@ async function fbDelete(col,id){
   try{await db.collection(col).doc(id).delete();}catch{}
 }
 function initFirebase(){
-  if(IS_PLACEHOLDER){S.demo=true;bootApp();return;}
-  // Safety timeout: if Firebase doesn't respond in 10s, boot anyway
-  const safetyTimer=setTimeout(()=>{
-    console.warn('Firebase timeout — booting without data');
+  // Always show login within 12s no matter what
+  const hardTimeout=setTimeout(()=>{
+    console.warn('Hard timeout — forcing login screen');
+    hideSplash();
+    showAuthRole();
+  },12000);
+  if(IS_PLACEHOLDER){
+    clearTimeout(hardTimeout);
+    S.demo=true;
     bootApp();
-  },10000);
+    return;
+  }
   try{
     firebase.initializeApp(FIREBASE_CONFIG);
     db=firebase.firestore();
     auth=firebase.auth();
-    loadAllData().then(()=>{clearTimeout(safetyTimer);bootApp();})
-      .catch(e=>{clearTimeout(safetyTimer);console.warn('loadAllData error:',e);bootApp();});
-  }catch(e){clearTimeout(safetyTimer);console.warn('Firebase init error:',e);bootApp();}
+    // 8 second soft timeout for data load
+    const dataTimer=setTimeout(()=>{
+      console.warn('Data load timeout — booting with empty data');
+      clearTimeout(hardTimeout);
+      bootApp();
+    },8000);
+    loadAllData()
+      .then(()=>{ clearTimeout(dataTimer); clearTimeout(hardTimeout); bootApp(); })
+      .catch(e=>{ clearTimeout(dataTimer); clearTimeout(hardTimeout); console.warn('loadAllData:',e.message); bootApp(); });
+  }catch(e){
+    clearTimeout(hardTimeout);
+    console.warn('Firebase init error:',e.message);
+    bootApp();
+  }
 }
 
-// Safe fetch: returns [] or {} on any error — never blocks boot
-async function safeGet(promise, fallback=[]){
-  try{const r=await promise;return r;}
-  catch(e){console.warn('Firestore fetch error:',e.message);return null;}
+// Safe fetch: returns null on error or timeout — never blocks boot
+function safeGet(promise){
+  return Promise.race([
+    promise.catch(e=>{console.warn('Fetch error:',e.message);return null;}),
+    new Promise(res=>setTimeout(()=>res(null),6000)) // 6s per-query timeout
+  ]);
 }
 
 async function loadAllData(){
@@ -750,7 +769,12 @@ async function loadAllData(){
   S.data.customers=custs?custs.docs.map(d=>({id:d.id,...d.data()})):[];
 }
 function bootApp(){
-  if(S.demo)loadDemoData();
+  if(S.demo){
+    loadDemoData();
+    // Show demo banner
+    const db_el=document.getElementById('demo-banner');
+    if(db_el)db_el.style.display='block';
+  }
   // If live and settings empty, create default settings doc
   if(!S.demo&&db&&(!S.data.settings||!S.data.settings.name)){
     S.data.settings={name:'PowerZone UPS & Battery',owner:'',phone:'',wa:'',addr:'',gstNum:'',adminPin:ADMIN_PIN_DEFAULT};
@@ -788,7 +812,13 @@ function startRealtimeListeners(){
       if(S.screen==='requests')renderRequests();
     },e=>console.warn('batteryBuys listener:',e)));
 }
-function hideSplash(){setTimeout(()=>{const sp=document.getElementById('splash');if(!sp)return;sp.style.transition='opacity .4s';sp.style.opacity='0';setTimeout(()=>sp.remove(),400);},900);}
+function hideSplash(){
+  const sp=document.getElementById('splash');
+  if(!sp)return;
+  sp.style.transition='opacity .35s';
+  sp.style.opacity='0';
+  setTimeout(()=>{if(sp.parentNode)sp.parentNode.removeChild(sp);},400);
+}
 
 // AUTH
 let selectedRole='admin';
