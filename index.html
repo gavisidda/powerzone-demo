@@ -251,6 +251,60 @@ a{color:inherit;text-decoration:none}
 .export-row{display:flex;justify-content:flex-end;margin-bottom:9px}
 .btn-export{padding:6px 13px;background:rgba(0,201,167,.1);color:var(--accent2);border-radius:9px;font-size:11px;font-weight:700;border:1px solid rgba(0,201,167,.25)}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+
+/* ── PRODUCT SHOP CARD */
+.prod-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:13px;margin-bottom:10px}
+.prod-card-head{display:flex;gap:11px;margin-bottom:10px}
+.prod-icon{width:52px;height:52px;border-radius:12px;background:rgba(245,166,35,.1);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.prod-info h4{font-size:14px;font-weight:700;margin-bottom:3px}
+.prod-cat{font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.prod-desc{font-size:11px;color:var(--muted);line-height:1.5}
+.prod-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
+.prod-price{font-family:var(--fh);font-size:20px;font-weight:700;color:var(--accent)}
+.prod-stock{font-size:10px;margin-top:2px}
+.qty-ctrl{display:flex;align-items:center;gap:8px}
+.qty-btn{width:30px;height:30px;border-radius:8px;background:var(--card2);border:1px solid var(--border);font-size:18px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:center}
+.qty-btn:active{background:var(--border)}
+.qty-num{font-family:var(--fh);font-size:16px;font-weight:700;min-width:22px;text-align:center}
+.add-btn{padding:8px 16px;background:linear-gradient(135deg,#f5a623,#e57e1a);color:#fff;border-radius:9px;font-size:12px;font-weight:700;font-family:var(--fh)}
+/* ── CART */
+.cart-badge{position:absolute;top:-4px;right:-4px;width:17px;height:17px;background:var(--danger);border-radius:50%;font-size:9px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center}
+.cart-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:11px 12px;display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ci-info{flex:1;min-width:0}
+.ci-info h4{font-size:13px;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ci-info p{font-size:11px;color:var(--muted)}
+.ci-right{text-align:right;flex-shrink:0}
+.ci-price{font-family:var(--fh);font-size:14px;font-weight:700;color:var(--accent2)}
+/* ── ORDER TOTALS */
+.tot-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:12px}
+.tot-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)}
+.tot-row:last-child{border-bottom:none;font-weight:700}
+.tot-row .tl{color:var(--muted)}.tot-row .tv{font-weight:600}
+.tot-row.grand .tv{color:var(--accent2);font-family:var(--fh);font-size:17px;font-weight:700}
+/* ── PAYMENT OPTIONS */
+.pay-opts{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.pay-opt{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:.2s}
+.pay-opt.sel{border-color:var(--accent);background:rgba(245,166,35,.06)}
+.po-icon{font-size:21px;flex-shrink:0}
+.po-name{font-size:13px;font-weight:700}
+.po-desc{font-size:11px;color:var(--muted)}
+.po-chk{margin-left:auto;width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:.2s}
+.pay-opt.sel .po-chk{background:var(--accent);border-color:var(--accent);display:flex;align-items:center;justify-content:center}
+.pay-opt.sel .po-chk::after{content:'✓';font-size:10px;color:#fff;font-weight:700}
+.upi-wrap{display:none;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:-5px}
+.upi-wrap.show{display:block}
+/* ── ORDER ITEMS LIST */
+.ord-items{background:var(--surface);border-radius:8px;padding:9px 11px;margin-bottom:10px}
+.oi{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.oi:last-child{border-bottom:none}
+.oi-n{flex:1;color:var(--text)}.oi-q{color:var(--muted);margin:0 8px}
+.oi-p{font-weight:700;color:var(--accent2);font-family:var(--fh);font-size:13px}
+/* ── BADGE EXTRAS */
+.b-confirmed{background:rgba(39,174,96,.15);color:#27ae60}
+.b-processing{background:rgba(61,142,248,.15);color:var(--blue)}
+.b-dispatched{background:rgba(155,89,182,.15);color:#a855f7}
+.b-delivered{background:rgba(0,201,167,.15);color:var(--accent2)}
+.b-cancelled{background:rgba(231,76,60,.15);color:var(--danger)}
 </style>
 </head>
 <body>
@@ -298,8 +352,9 @@ a{color:inherit;text-decoration:none}
     <div id="screen-more" class="screen"></div>
     <div id="screen-inventory" class="screen"></div>
     <div id="screen-cust-home" class="screen"></div>
-    <div id="screen-cust-request" class="screen"></div>
-    <div id="screen-cust-invoices" class="screen"></div>
+    <div id="screen-cust-shop" class="screen"></div>
+    <div id="screen-cust-cart" class="screen"></div>
+    <div id="screen-cust-orders" class="screen"></div>
     <div id="screen-cust-profile" class="screen"></div>
   </div>
   <nav id="bottomnav"><div class="nav-items" id="nav-items"></div></nav>
@@ -519,6 +574,10 @@ a{color:inherit;text-decoration:none}
     <div><label class="f-label">WhatsApp</label><input class="f-input" type="tel" id="bs-wa" placeholder="9XXXXXXXXX"/></div>
     <div><label class="f-label">Address</label><textarea class="f-input f-textarea" id="bs-addr" placeholder="Shop address..."></textarea></div>
     <div><label class="f-label">GST Number</label><input class="f-input" id="bs-gst" placeholder="GSTIN (optional)"/></div>
+    <div class="form-row">
+      <div><label class="f-label">GST %</label><input class="f-input" type="number" id="bs-gst-pct" placeholder="18"/></div>
+      <div><label class="f-label">Delivery Charge ₹</label><input class="f-input" type="number" id="bs-delivery" placeholder="0"/></div>
+    </div>
     <div><label class="f-label">New Admin PIN (blank = keep current)</label><input class="f-input" type="password" inputmode="numeric" maxlength="6" id="bs-pin" placeholder="6-digit PIN"/></div>
   </div>
   <div class="modal-actions">
@@ -626,7 +685,8 @@ const IS_PLACEHOLDER=false; // Live Firebase config active
 const ADMIN_PIN_DEFAULT='123456';
 const APP_URL=window.location.href;
 const S={demo:IS_PLACEHOLDER,role:null,user:null,screen:'home',
-  data:{products:[],quoteReqs:[],svcReqs:[],batteryBuys:[],invoices:[],members:[],settings:{},customers:[]},
+  data:{products:[],svcReqs:[],orders:[],invoices:[],members:[],settings:{},customers:[]},
+  cart:[],payMethod:'cod',
   filters:{products:'All',inventory:'All',reqTab:'quote',billTab:'invoices'},
   pinBuffer:'',pinTarget:null,pendingMobile:'',editingProductId:null,viewingQuoteId:null,viewingSvcId:null,saving:false};
 let db=null,auth=null;
@@ -637,7 +697,7 @@ function nextSvcNum(){const nums=S.data.svcReqs.map(r=>+(r.refNum||'').replace('
 
 // DEMO DATA
 function loadDemoData(){
-  S.data.settings={name:'PowerZone UPS & Battery',owner:'Gavi Hatti',phone:'9845671234',wa:'9845671234',addr:'#12, Main Road, Koppal - 583231, Karnataka',gstNum:'29XXXXX1234X1ZX',adminPin:ADMIN_PIN_DEFAULT};
+  S.data.settings={name:'PowerZone UPS & Battery',owner:'Gavi Hatti',phone:'9845671234',wa:'9845671234',addr:'#12, Main Road, Koppal - 583231, Karnataka',gstNum:'29XXXXX1234X1ZX',adminPin:ADMIN_PIN_DEFAULT,gstPct:18,deliveryCharge:0};
   S.data.members=[{id:'m1',name:'Raju Technician',mobile:'9876501111',role:'member',pin:'111222',active:true},{id:'m2',name:'Seema Office',mobile:'9876502222',role:'member',pin:'222333',active:true}];
   S.data.products=[
     {id:'p1',name:'Luminous Zelio+ 1100VA',brand:'Luminous',category:'Home UPS',buyPrice:4800,sellPrice:6200,qty:5,warranty:24,supplier:'Luminous Dist.',desc:'Pure sine wave, LCD display.',addedBy:'Gavi Hatti'},
@@ -656,24 +716,18 @@ function loadDemoData(){
     {id:'p14',name:'Battery Connector Terminals',brand:'Generic',category:'Accessories',buyPrice:40,sellPrice:80,qty:150,warranty:0,supplier:'Local',desc:'Set of 4 bolt-on terminals.',addedBy:'Seema Office'},
     {id:'p15',name:'Circuit Breaker 32A',brand:'Havells',category:'Accessories',buyPrice:120,sellPrice:220,qty:30,warranty:12,supplier:'Havells',desc:'UPS/inverter protection.',addedBy:'Seema Office'},
   ];
-  S.data.quoteReqs=[
-    {id:'q1',refNum:'Q1001',name:'Ravi Kumar',mobile:'9876543210',location:'Koppal',landmark:'',type:'Home',product:'Home UPS',budget:15000,backup:6,notes:'Need for 3 rooms, 8hr power cut',status:'pending',date:'2026-05-15',custMobile:'',quotedPrice:'',quoteNotes:''},
-    {id:'q2',refNum:'Q1002',name:'Suresh School',mobile:'9988776655',location:'Gangavathi',landmark:'',type:'School',product:'Office UPS',budget:80000,backup:4,notes:'Computer lab 30 systems',status:'pending',date:'2026-05-16',custMobile:'',quotedPrice:'',quoteNotes:''},
-    {id:'q3',refNum:'Q1003',name:'Hotel Kaveri',mobile:'9900112233',location:'Munirabad',landmark:'',type:'Hotel',product:'Home UPS',budget:25000,backup:8,notes:'Multiple rooms backup',status:'quoted',date:'2026-05-14',custMobile:'',quotedPrice:'22000',quoteNotes:'Includes 2x UPS + 2x Battery. 1yr warranty.'},
-  ];
+  S.data.quoteReqs=[];
   S.data.svcReqs=[
     {id:'s1',refNum:'S5001',name:'Basavaraj H',mobile:'9876501234',location:'Koppal Main Road',landmark:'Near Bus Stand',issue:'UPS not working',desc:'UPS beeping constantly',status:'pending',date:'2026-05-16',custMobile:'',assignedTo:'',workNotes:''},
     {id:'s2',refNum:'S5002',name:'Shanthamma',mobile:'9765432100',location:'Ginigera',landmark:'Old Bus Stop',issue:'Battery issue',desc:'Battery not holding charge',status:'assigned',date:'2026-05-15',custMobile:'',assignedTo:'m1',workNotes:''},
     {id:'s3',refNum:'S5003',name:'Demo Customer',mobile:'9000000001',location:'Koppal',landmark:'PowerZone test',issue:'Installation request',desc:'New UPS installation',status:'pending',date:'2026-05-17',custMobile:'9000000001',assignedTo:'',workNotes:''},
   ];
-  S.data.batteryBuys=[
-    {id:'b1',name:'Mallikarjun',mobile:'9845671230',location:'Kuknoor',landmark:'',type:'Tubular',capacity:150,age:4,condition:'Average',expectedPrice:1500,status:'pending',date:'2026-05-16',custMobile:''},
-    {id:'b2',name:'Demo Customer',mobile:'9000000001',location:'Koppal',landmark:'',type:'Flat Plate',capacity:100,age:5,condition:'Poor',expectedPrice:800,status:'pending',date:'2026-05-17',custMobile:'9000000001'},
+  S.data.orders=[
+    {id:'ord1',orderNum:'ORD10001',custName:'Demo Customer',custMobile:'9000000001',addr:'123 Main Street, Koppal',landmark:'Near Bus Stand',city:'Koppal',pin:'583231',items:[{id:'p4',name:'Exide InvaTubular 150Ah',qty:1,price:8500},{id:'p1',name:'Luminous Zelio+ 1100VA',qty:1,price:6200}],subtotal:14700,gst:2646,delivery:0,total:17346,payMethod:'cod',upiId:'',status:'confirmed',date:'2026-05-17',notes:'',adminNotes:'Order confirmed. Will deliver in 2 days.'},
+    {id:'ord2',orderNum:'ORD10002',custName:'Ravi Kumar',custMobile:'9876543210',addr:'45 Gandhi Nagar, Koppal',landmark:'Near Temple',city:'Koppal',pin:'583231',items:[{id:'p10',name:'DC Cable 6mm',qty:5,price:45}],subtotal:225,gst:40,delivery:0,total:265,payMethod:'upi',upiId:'ravi@gpay',status:'delivered',date:'2026-05-15',notes:'',adminNotes:'Delivered'},
   ];
   S.data.invoices=[
-    {id:'i1',customer:'Ravi Kumar',mobile:'9876543210',items:'1x Luminous Zelio+ 1100VA — ₹6200\n1x Exide 150Ah — ₹8500\n1x Installation — ₹500',subtotal:15200,gst:18,total:17936,type:'Invoice',date:'2026-05-15',custMobile:''},
-    {id:'i2',customer:'Hotel Kaveri',mobile:'9900112233',items:'4x Luminous Zelio+ UPS — ₹24800\n4x Exide 150Ah Batteries — ₹34000',subtotal:58800,gst:18,total:69384,type:'Quotation',date:'2026-05-14',custMobile:''},
-    {id:'i3',customer:'Demo Customer',mobile:'9000000001',items:'1x Microtek UPS 800VA — ₹3500\n1x Exide 100Ah Battery — ₹5800',subtotal:9300,gst:18,total:10974,type:'Invoice',date:'2026-05-17',custMobile:'9000000001'},
+    {id:'inv1',customer:'Demo Customer',mobile:'9000000001',items:'1x Exide InvaTubular 150Ah — ₹8500\n1x Luminous Zelio+ 1100VA — ₹6200',subtotal:14700,gst:18,total:17346,type:'Invoice',date:'2026-05-17',custMobile:'9000000001',orderId:'ORD10001',manual:false},
   ];
   S.data.customers=[{mobile:'9000000001',name:'Demo Customer',pin:'1234',registeredOn:'2026-05-17'}];
 }
@@ -748,13 +802,12 @@ function safeGet(promise){
 
 async function loadAllData(){
   // Fetch each collection independently — one failure won't block others
-  const [sets,mems,prods,qReqs,sReqs,bBuys,invs,custs]=await Promise.all([
+  const [sets,mems,prods,sReqs,ords,invs,custs]=await Promise.all([
     safeGet(db.collection('settings').doc('business').get()),
     safeGet(db.collection('members').get()),
     safeGet(db.collection('products').get()),
-    safeGet(db.collection('quoteReqs').orderBy('date','desc').limit(200).get()),
     safeGet(db.collection('svcReqs').orderBy('date','desc').limit(200).get()),
-    safeGet(db.collection('batteryBuys').orderBy('date','desc').limit(200).get()),
+    safeGet(db.collection('orders').orderBy('date','desc').limit(200).get()),
     safeGet(db.collection('invoices').orderBy('date','desc').limit(200).get()),
     safeGet(db.collection('customers').get()),
   ]);
@@ -762,9 +815,8 @@ async function loadAllData(){
   else S.data.settings={name:'PowerZone',adminPin:ADMIN_PIN_DEFAULT};
   S.data.members=mems?mems.docs.map(d=>({id:d.id,...d.data()})):[];
   S.data.products=prods?prods.docs.map(d=>({id:d.id,...d.data()})):[];
-  S.data.quoteReqs=qReqs?qReqs.docs.map(d=>({id:d.id,...d.data()})):[];
   S.data.svcReqs=sReqs?sReqs.docs.map(d=>({id:d.id,...d.data()})):[];
-  S.data.batteryBuys=bBuys?bBuys.docs.map(d=>({id:d.id,...d.data()})):[];
+  S.data.orders=ords?ords.docs.map(d=>({id:d.id,...d.data()})):[];
   S.data.invoices=invs?invs.docs.map(d=>({id:d.id,...d.data()})):[];
   S.data.customers=custs?custs.docs.map(d=>({id:d.id,...d.data()})):[];
 }
@@ -977,7 +1029,7 @@ function showMainApp(){
   document.getElementById('app-root').style.display='flex';
   document.getElementById('topbar').style.display='block';
   document.getElementById('bottomnav').style.display='block';
-  buildNav();showScreen(S.role==='customer'?'cust-home':'home');
+  buildNav();showScreen(S.role==='customer'?'cust-shop':'home');
 }
 
 // NAV
@@ -989,13 +1041,13 @@ const ADMIN_NAV=[
   {id:'more',icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>',label:'More'},
 ];
 const CUST_NAV=[
-  {id:'cust-home',icon:'<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',label:'Home'},
-  {id:'cust-request',icon:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>',label:'Requests'},
-  {id:'cust-invoices',icon:'<svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',label:'My Bills'},
+  {id:'cust-shop',icon:'<svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',label:'Shop'},
+  {id:'cust-cart',icon:'<svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',label:'Cart'},
+  {id:'cust-orders',icon:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>',label:'Orders'},
   {id:'cust-profile',icon:'<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',label:'Profile'},
 ];
 function buildNav(){const items=S.role==='customer'?CUST_NAV:ADMIN_NAV;document.getElementById('nav-items').innerHTML=items.map(n=>`<button class="ni" id="ni-${n.id}" onclick="showScreen('${n.id}')">${n.icon}<span>${n.label}</span></button>`).join('');}
-const TITLES={home:'Dashboard',products:'Products',requests:'Requests',billing:'Billing',more:'More','cust-home':'PowerZone','cust-request':'My Requests','cust-invoices':'My Bills','cust-profile':'My Account'};
+const TITLES={home:'Dashboard',products:'Products',requests:'Requests',billing:'Billing',more:'More',inventory:'Inventory','cust-home':'PowerZone','cust-shop':'Shop','cust-cart':'My Cart','cust-orders':'My Orders','cust-profile':'My Account'};
 function showScreen(name){
   S.screen=name;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -1004,17 +1056,23 @@ function showScreen(name){
   const ni=document.getElementById('ni-'+name);if(ni)ni.classList.add('active');
   document.getElementById('tb-title').textContent=TITLES[name]||name;
   renderTopRight();
-  const renders={home:renderHome,products:renderProducts,requests:renderRequests,billing:renderBilling,more:renderMore,'cust-home':renderCustHome,'cust-request':renderCustRequest,'cust-invoices':renderCustInvoices,'cust-profile':renderCustProfile};
+  const renders={home:renderHome,products:renderProducts,requests:renderRequests,billing:renderBilling,more:renderMore,inventory:renderInventory,'cust-home':renderCustHome,'cust-shop':renderCustShop,'cust-cart':renderCustCart,'cust-orders':renderCustOrders,'cust-profile':renderCustProfile};
   if(renders[name])renders[name]();
   document.getElementById('scroll-area').scrollTop=0;
 }
 function renderTopRight(){
   const tbr=document.getElementById('tb-right');const pc=pendingCount();
-  if(S.role==='customer'){tbr.innerHTML=`<button class="ib" onclick="openWhatsApp()"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></button>`;}
+  if(S.role==='customer'){
+    const cc=S.cart?S.cart.reduce((s,i)=>s+i.qty,0):0;
+    tbr.innerHTML=`<button class="ib" onclick="showScreen('cust-cart')" style="position:relative">
+      <svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      ${cc>0?`<span class="cart-badge">${cc}</span>`:''}
+    </button>`;
+  }
   else{tbr.innerHTML=`${pc>0?`<div class="ib"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="notif-dot">${pc}</div></div>`:''}
     <button class="ib" onclick="openModal('quote')"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>`;}
 }
-function pendingCount(){return S.data.quoteReqs.filter(r=>r.status==='pending').length+S.data.svcReqs.filter(r=>r.status==='pending').length;}
+function pendingCount(){return (S.data.svcReqs||[]).filter(r=>r.status==='pending').length+(S.data.orders||[]).filter(o=>o.status==='pending').length;}
 
 // HOME (Fix #2 - no extra buttons, clickable stat cards)
 function renderHome(){
@@ -1022,8 +1080,8 @@ function renderHome(){
   const totalVal=prods.reduce((s,p)=>s+(p.qty||0)*(p.sellPrice||0),0);
   const lowStock=prods.filter(p=>(p.qty||0)<=3).length;
   const pending=pendingCount();
-  const todayInv=S.data.invoices.filter(i=>i.date===today()&&i.type==='Invoice');
-  const todaySale=todayInv.reduce((s,i)=>s+(i.total||0),0);
+  const todayOrds=S.data.orders.filter(i=>i.date===today());
+  const todaySale=todayOrds.reduce((s,i)=>s+(i.total||0),0);
   const el=document.getElementById('screen-home');
   el.innerHTML=`
     <div class="hero">
@@ -1035,22 +1093,19 @@ function renderHome(){
       <div class="stat-card c-orange" data-icon="📦" onclick="showScreen('products')"><div class="sc-label">Products</div><div class="sc-val">${prods.length}</div><div class="sc-sub">Tap to view all →</div></div>
       <div class="stat-card c-green" data-icon="₹" onclick="showScreen('billing')"><div class="sc-label">Stock Value</div><div class="sc-val">₹${fmt(totalVal)}</div><div class="sc-sub">Tap for billing →</div></div>
       <div class="stat-card c-red" data-icon="🔔" onclick="showScreen('requests')"><div class="sc-label">Pending</div><div class="sc-val">${pending}</div><div class="sc-sub">Tap to manage →</div></div>
-      <div class="stat-card c-blue" data-icon="📅" onclick="showScreen('billing')"><div class="sc-label">Today Sales</div><div class="sc-val">₹${fmt(todaySale)}</div><div class="sc-sub">${todayInv.length} invoice(s)</div></div>
+      <div class="stat-card c-blue" data-icon="🛒" onclick="showScreen('requests')"><div class="sc-label">Today Orders</div><div class="sc-val">₹${fmt(todaySale)}</div><div class="sc-sub">${todayOrds.length} order(s)</div></div>
     </div>
-    <div class="sec-head"><div class="sec-title">Recent Requests</div><button class="see-all" onclick="showScreen('requests')">See all →</button></div>
+    <div class="sec-head"><div class="sec-title">Recent Orders</div><button class="see-all" onclick="showScreen('requests')">See all →</button></div>
     <div id="dash-recent"></div>
     <div class="sec-head"><div class="sec-title">Low Stock Alert</div><button class="see-all" onclick="showScreen('products')">View all →</button></div>
     <div id="dash-lowstock"></div><div style="height:8px"></div>`;
-  const rec=S.data.quoteReqs.slice(0,3);
-  document.getElementById('dash-recent').innerHTML=rec.length?rec.map(r=>`
+  const rec=(S.data.orders||[]).slice(0,3);
+  document.getElementById('dash-recent').innerHTML=rec.length?rec.map(o=>`
     <div class="rcard">
-      <div class="rcard-head"><div><div class="rcard-num">${r.refNum||''}</div><div class="rcard-name">${r.name}</div></div><span class="badge ${badgeClass(r.status)}">${r.status}</span></div>
-      <div class="rcard-meta"><span>📍${r.location}</span><span>📦${r.product}</span><span>💰₹${fmt(r.budget)}</span></div>
-      <div class="rcard-actions">
-        <button class="ra-btn ra-view" onclick="viewQuote('${r.id}')">👁 View</button>
-        <button class="ra-btn ra-wa" onclick="waContact('${r.mobile}','${r.name}')">💬</button>
-      </div>
-    </div>`).join(''):`<div class="empty"><div class="ei">📋</div><p>No requests yet</p></div>`;
+      <div class="rcard-head"><div><div class="rcard-num">${o.orderNum}</div><div class="rcard-name">${o.custName}</div><div class="rcard-sub">${o.date}</div></div><span class="badge ${ordBadge(o.status)}">${o.status}</span></div>
+      <div class="rcard-meta"><span>📍${o.city||'—'}</span><span>💰₹${fmt(o.total)}</span><span>💳${(o.payMethod||'COD').toUpperCase()}</span></div>
+      <div class="rcard-actions"><button class="ra-btn ra-view" onclick="viewOrder('${o.id}')">👁 View</button></div>
+    </div>`).join(''):`<div class="empty"><div class="ei">🛒</div><p>No orders yet</p></div>`;
   const low=prods.filter(p=>(p.qty||0)<=3);
   document.getElementById('dash-lowstock').innerHTML=low.length?low.map(p=>`
     <div class="lcard">
@@ -1132,30 +1187,29 @@ function exportProductsCSV(){
 
 // REQUESTS
 function renderRequests(){
+  S.filters.reqTab=S.filters.reqTab||'orders';
   document.getElementById('screen-requests').innerHTML=`
     <div class="itabs">
-      <button class="itab ${S.filters.reqTab==='quote'?'active':''}" onclick="setReqTab('quote')">Quotes (${S.data.quoteReqs.filter(r=>r.status==='pending').length})</button>
-      <button class="itab ${S.filters.reqTab==='service'?'active':''}" onclick="setReqTab('service')">Service (${S.data.svcReqs.filter(r=>r.status==='pending').length})</button>
-      <button class="itab ${S.filters.reqTab==='battery'?'active':''}" onclick="setReqTab('battery')">Battery</button>
+      <button class="itab ${S.filters.reqTab==='orders'?'active':''}" onclick="setReqTab('orders')">Orders (${(S.data.orders||[]).filter(o=>o.status==='pending').length})</button>
+      <button class="itab ${S.filters.reqTab==='service'?'active':''}" onclick="setReqTab('service')">Service (${(S.data.svcReqs||[]).filter(r=>r.status==='pending').length})</button>
     </div>
-    <div style="display:flex;gap:7px;margin-bottom:10px">
-      <button class="btn-sm-accent" onclick="openModal('quote')">+ Quote</button>
-      <button class="btn-sm-ghost" onclick="openModal('service')">+ Service</button>
-      <button class="btn-sm-ghost" onclick="openModal('battery')">+ Battery</button>
-    </div>
+    ${S.filters.reqTab==='service'?'<div style="margin-bottom:10px"><button class="btn-sm-accent" onclick="addServiceReq()">+ Add Service</button></div>':''}
     <div id="req-body"></div>`;
   renderReqBody();
 }
+function addServiceReq(){openModal("service");}
 function setReqTab(t){S.filters.reqTab=t;renderRequests();}
 function renderReqBody(){
   const el=document.getElementById('req-body');if(!el)return;
-  if(S.filters.reqTab==='quote')
-    el.innerHTML=S.data.quoteReqs.length?S.data.quoteReqs.map(r=>quoteCard(r)).join(''):`<div class="empty"><div class="ei">📋</div><p>No quote requests</p></div>`;
-  else if(S.filters.reqTab==='service')
-    el.innerHTML=S.data.svcReqs.length?S.data.svcReqs.map(r=>svcCard(r)).join(''):`<div class="empty"><div class="ei">🔧</div><p>No service requests</p></div>`;
-  else
-    el.innerHTML=S.data.batteryBuys.length?S.data.batteryBuys.map(r=>batteryCard(r)).join(''):`<div class="empty"><div class="ei">🔋</div><p>No battery buy requests</p></div>`;
+  if(S.filters.reqTab==='orders'){
+    const list=S.data.orders||[];
+    el.innerHTML=list.length?list.map(o=>adminOrderCard(o)).join(''):`<div class="empty"><div class="ei">🛒</div><p>No orders yet</p></div>`;
+  }else{
+    el.innerHTML=(S.data.svcReqs||[]).length?(S.data.svcReqs||[]).map(r=>svcCard(r)).join(''):`<div class="empty"><div class="ei">🔧</div><p>No service requests</p></div>`;
+  }
 }
+function adminOrderCard(o){return`<div class="rcard"><div class="rcard-head"><div><div class="rcard-num">${o.orderNum}</div><div class="rcard-name">${o.custName}</div><div class="rcard-sub">${o.custMobile} · ${o.date}</div></div><span class="badge ${ordBadge(o.status)}">${o.status}</span></div><div class="rcard-meta"><span>📍${o.city||'—'}</span><span>💰₹${fmt(o.total)}</span><span>💳${(o.payMethod||'').toUpperCase()}</span><span>📦${(o.items||[]).length} item(s)</span></div><div class="rcard-actions"><button class="ra-btn ra-view" onclick="viewOrder('${o.id}')">👁 View & Update</button><button class="ra-btn ra-wa" onclick="waContact('${o.custMobile||''}','${o.custName||''}')">💬</button></div></div>`;}
+function ordBadge(s){return s==='confirmed'?'b-confirmed':s==='processing'?'b-processing':s==='dispatched'?'b-dispatched':s==='delivered'?'b-delivered':s==='cancelled'?'b-cancelled':'b-pending';}
 function quoteCard(r){return`
   <div class="rcard">
     <div class="rcard-head"><div><div class="rcard-num">${r.refNum||''}</div><div class="rcard-name">${r.name}</div><div class="rcard-sub">${r.mobile} · ${r.date||''}</div></div><span class="badge ${badgeClass(r.status)}">${r.status}</span></div>
@@ -1450,7 +1504,7 @@ function renderCustHome(){
       <div class="contact-btns"><button class="btn-wa" onclick="openWhatsApp()">💬 WhatsApp</button><button class="btn-call" onclick="callShop()">📞 Call Now</button></div>
     </div><div style="height:8px"></div>`;
 }
-function renderCustRequest(){
+function _oldCustRequest_unused(){
   const mob=S.user?.mobile||'';
   const myReqs=[
     ...S.data.quoteReqs.filter(r=>r.custMobile===mob).map(r=>({...r,_t:'quote'})),
@@ -1475,7 +1529,7 @@ function renderCustRequest(){
     }).join(''):`<div class="empty"><div class="ei">📋</div><p>No requests yet</p></div>`}
     <div style="height:8px"></div>`;
 }
-function renderCustInvoices(){
+function _oldCustInvoices_unused(){
   const mob=S.user?.mobile||'';
   const myInv=S.data.invoices.filter(i=>i.custMobile===mob||i.mobile===mob);
   document.getElementById('screen-cust-invoices').innerHTML=myInv.length?myInv.map(i=>`
@@ -1640,7 +1694,7 @@ function openModal(name){
     sv('cq-mobile',mob);sv('cq-name',S.user?.name||'');
     sv('cb-mobile',mob);sv('cb-name',S.user?.name||'');
   }
-  if(name==='settings'){const s=S.data.settings;sv('bs-name',s.name||'PowerZone');sv('bs-owner',s.owner||'');sv('bs-phone',s.phone||'');sv('bs-wa',s.wa||'');sv('bs-addr',s.addr||'');sv('bs-gst',s.gstNum||'');sv('bs-pin','');}
+  if(name==='settings'){const s=S.data.settings;sv('bs-name',s.name||'PowerZone');sv('bs-owner',s.owner||'');sv('bs-phone',s.phone||'');sv('bs-wa',s.wa||'');sv('bs-addr',s.addr||'');sv('bs-gst',s.gstNum||'');sv('bs-pin','');sv('bs-gst-pct',s.gstPct||'18');sv('bs-delivery',s.deliveryCharge||'0');}
   if(name==='invoice'){sv('iv-gst','18');sv('iv-total','');calcGST();}
   S.saving=false;
   el.classList.add('open');
@@ -1651,7 +1705,7 @@ function calcGST(){const sub=+(document.getElementById('iv-sub')?.value||0);cons
 function openWhatsApp(){const wa=S.data.settings?.wa||'';if(!wa){toast('WhatsApp not set');return;}window.open(`https://wa.me/91${wa.replace(/\D/g,'')}?text=${encodeURIComponent('Hello PowerZone!')}`, '_blank');}
 function waContact(mob,name){const msg=encodeURIComponent(`Hello ${name}, this is PowerZone. We received your request.\n${APP_URL}`);window.open(`https://wa.me/91${mob.replace(/\D/g,'')}?text=${msg}`,'_blank');}
 function callShop(){const ph=S.data.settings?.phone||'';if(ph)window.location.href=`tel:${ph}`;else toast('Phone not set');}
-function doLogout(){lsDel('pz_session');S.role=null;S.user=null;document.getElementById('app-root').style.display='none';document.getElementById('topbar').style.display='none';document.getElementById('bottomnav').style.display='none';document.getElementById('auth-role').classList.add('visible');selectedRole='admin';renderRoleForm('admin');toast('Signed out');}
+function doLogout(){lsDel('pz_session');S.role=null;S.user=null;S.cart=[];document.getElementById('app-root').style.display='none';document.getElementById('topbar').style.display='none';document.getElementById('bottomnav').style.display='none';document.getElementById('auth-role').classList.add('visible');selectedRole='admin';renderRoleForm('admin');toast('Signed out');}
 function v(id){return(document.getElementById(id)?.value||'').trim();}
 function sv(id,val){const el=document.getElementById(id);if(el)el.value=val;}
 function sv2(id,val){const el=document.getElementById(id);if(el){for(let o of el.options)if(o.value===val)o.selected=true;}}
